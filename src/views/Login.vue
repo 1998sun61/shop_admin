@@ -14,7 +14,7 @@
         </el-form-item>
 
         <el-form-item label="密码" prop="password">
-          <el-input type="password" v-model="ruleForm.password"></el-input>
+          <el-input type="password" show-password v-model="ruleForm.password"></el-input>
         </el-form-item>
 
         <el-form-item>
@@ -28,7 +28,6 @@
 
 
 <script>
-import axios from "axios";
 // import { close, closeSync } from "fs";
 export default {
   data() {
@@ -71,8 +70,8 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid) {
-          axios({
-            url: "http://localhost:8888/api/private/v1/login",
+          this.$http({
+            url: "login",
             method: "post",
             data: this.ruleForm
           }).then(({ data: { data, meta } }) => {

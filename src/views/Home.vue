@@ -15,7 +15,7 @@
         <el-col :span="6">
           <span>
             欢迎伟大的管理员
-            <a href="#">退出</a>
+            <a href="#" @click.prevent="loginOut">退出</a>
           </span>
         </el-col>
       </el-row>
@@ -115,7 +115,23 @@
 </template>
 
 <script>
-export default {};
+export default {
+  methods: {
+    async loginOut() {
+      await this.$confirm("此操作将退出此页面, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      });
+      this.$message({
+        type: "success",
+        message: "退出成功"
+      });
+      localStorage.removeItem("token");
+      this.$router.push("/login");
+    }
+  }
+};
 </script>
 
 <style lang="less">
