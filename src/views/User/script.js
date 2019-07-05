@@ -1,113 +1,3 @@
-<template>
-  <div>
-    <!-- 面包屑导航 -->
-    <el-breadcrumb separator-class="el-icon-arrow-right">
-      <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>用户管理</el-breadcrumb-item>
-      <el-breadcrumb-item>用户列表</el-breadcrumb-item>
-    </el-breadcrumb>
-    <!-- //搜索框 -->
-    <el-row :gutter="20">
-      <el-col :span="6">
-        <el-input
-          placeholder="请输入内容"
-          class="input-with-select"
-          v-model="searchUser"
-          @keyup.enter.native="search"
-        >
-          <el-button slot="append" icon="el-icon-search" @click="search"></el-button>
-        </el-input>
-      </el-col>
-      <el-col :span="6">
-        <el-button type="success" plain @click="addUser">添加用户</el-button>
-      </el-col>
-    </el-row>
-    <!-- 表格 -->
-    <el-table :data="userList" stripe style="width=100%">
-      <el-table-column prop="username" label="姓名" width="120px"></el-table-column>
-      <el-table-column prop="email" label="邮箱" width="180px"></el-table-column>
-      <el-table-column prop="mobile" label="电话" width="180px"></el-table-column>
-      <el-table-column label="用户状态" width="150px">
-        <template v-slot="{row}">
-          <!-- {{scope.row}} -->
-          <el-switch
-            v-model="row.mg_state"
-            @change="toggleUser(row)"
-            active-color="#13ce66"
-            inactive-color="#ff4949"
-          ></el-switch>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作">
-        <template v-slot="{row}">
-          <el-button type="primary" plain icon="el-icon-edit" size="mini" @click="editUser(row)"></el-button>
-          <el-button type="danger" plain icon="el-icon-delete" size="mini" @click="delUser(row.id)"></el-button>
-          <el-button type="success" plain icon="el-icon-check" size="mini">分配角色</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <!-- 分页器 -->
-    <el-pagination
-      background
-      layout="prev, pager, next"
-      :total="total"
-      :page-size="pagesize"
-      :current-page="currentpage"
-      @current-change="onPageChange"
-    ></el-pagination>
-
-    <!-- 添加模态框 -->
-    <el-dialog
-      title="添加用户"
-      :visible.sync="dialogFormUserShow"
-      @close="$refs.addFormUser.resetFields()"
-    >
-      <el-form :model="formUser" label-width="100px" ref="addFormUser" :rules="rulesForm">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="formUser.username" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="formUser.password" autocomplete="off"></el-input>
-        </el-form-item>
-
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="formUser.email" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="手机号" prop="mobile">
-          <el-input v-model="formUser.mobile" autocomplete="off"></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormUserShow = false">取 消</el-button>
-        <el-button type="primary" @click="addUserList">确 定</el-button>
-      </div>
-    </el-dialog>
-
-    <!-- 修改用户模态框 -->
-    <el-dialog title="修改用户信息" :visible.sync="editFormUserShow">
-      <el-form :model="editUserForm" label-width="100px" ref="editFormUser" :rules="editForm">
-        <el-form-item label="用户名">
-          <el-tag type="info" v-text="editUserForm.username"></el-tag>
-        </el-form-item>
-
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="editUserForm.email" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="手机号" prop="mobile">
-          <el-input v-model="editUserForm.mobile" autocomplete="off"></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="editFormUserShow = false">取 消</el-button>
-        <el-button type="primary" @click="editUserList">确 定</el-button>
-      </div>
-    </el-dialog>
-  </div>
-</template>
-
-<script>
-import { createHash } from "crypto";
-// import axios from "axios";
 export default {
   data() {
     return {
@@ -183,7 +73,15 @@ export default {
             trigger: "change"
           }
         ]
-      }
+      },
+      // 分配角色模态框显示隐藏
+      allocationShow: false,
+      allocationForm: {
+        username: "",
+        rid: "",
+        id: ""
+      },
+      allocationUser: []
     };
   },
   created() {
@@ -358,21 +256,42 @@ export default {
           duration: 1000
         });
       }
+    },
+    // 分配角色模态框
+    async allocationUserList(id) {
+      let res = await this.$http({
+        url: `users/${id}`
+      });
+      this.allocationForm = res.data.data;
+      // console.log(res);
+
+      let resultUser = await this.$http({
+        url: "roles"
+      });
+      // console.log(resultUser);
+      this.allocationUser = resultUser.data.data;
+      // console.log(res);
+      this.allocationShow = true;
+    },
+    // 分配角色提交
+    async allocationList() {
+      let res = await this.$http({
+        url: `users/${this.allocationForm.id}/role`,
+        method: "put",
+        data: {
+          rid: this.allocationForm.rid
+        }
+      });
+      // console.log(res.data.meta.status);
+      if (res.data.meta.status === 200) {
+        this.$message({
+          message: res.data.meta.msg,
+          type: "success",
+          duration: 1000
+        });
+        this.getUserList();
+      }
+      this.allocationShow = false;
     }
   }
 };
-</script>
-<style lang="less">
-.el-table td,
-.el-table th {
-  text-align: center;
-}
-.el-breadcrumb {
-  background-color: #d4dae0;
-  height: 50px;
-  font-size: 16px;
-  line-height: 50px;
-  padding-left: 20px;
-  margin-bottom: 10px;
-}
-</style>

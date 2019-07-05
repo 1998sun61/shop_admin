@@ -4,7 +4,7 @@
     <el-header>
       <el-row type="flex" justify="space-between" align="middle">
         <!-- logo -->
-        <el-col :span="6">
+        <el-col :span="5">
           <img src="../assets/logo.png" alt />
         </el-col>
         <!-- 标题 -->
@@ -12,7 +12,7 @@
           <h1>品优购后台管理系统</h1>
         </el-col>
         <!-- 右侧退出 -->
-        <el-col :span="6">
+        <el-col :span="6" class="rightOut">
           <span>
             欢迎伟大的管理员
             <a href="#" @click.prevent="loginOut">退出</a>
@@ -32,75 +32,19 @@
           :unique-opened="true"
           :router="true"
         >
-          <el-submenu index="1">
+          <el-submenu v-for="item1 in menusList" :key="item1.id" :index="item1.order + ''">
             <template slot="title">
               <i class="el-icon-location"></i>
-              <span>用户管理</span>
+              <span>{{item1.authName}}</span>
             </template>
             <el-menu-item-group>
-              <el-menu-item index="/user">
+              <el-menu-item
+                :index="'/' + item2.path"
+                v-for="item2 in item1.children"
+                :key="item2.id"
+              >
                 <i class="el-icon-menu"></i>
-                <span slot="title">用户管理</span>
-              </el-menu-item>
-            </el-menu-item-group>
-          </el-submenu>
-          <el-submenu index="2">
-            <template slot="title">
-              <i class="el-icon-location"></i>
-              <span>权限管理</span>
-            </template>
-            <el-menu-item-group>
-              <el-menu-item index="1-1">
-                <i class="el-icon-menu"></i>
-                <span slot="title">角色列表</span>
-              </el-menu-item>
-              <el-menu-item index="1-1">
-                <i class="el-icon-menu"></i>
-                <span slot="title">权限列表</span>
-              </el-menu-item>
-            </el-menu-item-group>
-          </el-submenu>
-          <el-submenu index="3">
-            <template slot="title">
-              <i class="el-icon-location"></i>
-              <span>商品管理</span>
-            </template>
-            <el-menu-item-group>
-              <el-menu-item index="1-1">
-                <i class="el-icon-menu"></i>
-                <span slot="title">商品列表</span>
-              </el-menu-item>
-              <el-menu-item index="1-1">
-                <i class="el-icon-menu"></i>
-                <span slot="title">分类参数</span>
-              </el-menu-item>
-              <el-menu-item index="1-1">
-                <i class="el-icon-menu"></i>
-                <span slot="title">商品分类</span>
-              </el-menu-item>
-            </el-menu-item-group>
-          </el-submenu>
-          <el-submenu index="4">
-            <template slot="title">
-              <i class="el-icon-location"></i>
-              <span>订单管理</span>
-            </template>
-            <el-menu-item-group>
-              <el-menu-item index="1-1">
-                <i class="el-icon-menu"></i>
-                <span slot="title">订单列表</span>
-              </el-menu-item>
-            </el-menu-item-group>
-          </el-submenu>
-          <el-submenu index="5">
-            <template slot="title">
-              <i class="el-icon-location"></i>
-              <span>数据统计</span>
-            </template>
-            <el-menu-item-group>
-              <el-menu-item index="1-1">
-                <i class="el-icon-menu"></i>
-                <span slot="title">数据报表</span>
+                <span slot="title">{{item2.authName}}</span>
               </el-menu-item>
             </el-menu-item-group>
           </el-submenu>
@@ -116,6 +60,20 @@
 
 <script>
 export default {
+  data() {
+    return {
+      menusList: []
+    };
+  },
+  async created() {
+    let res = await this.$http({
+      url: "menus"
+    });
+    if (res.data.meta.status === 200) {
+      this.menusList = res.data.data;
+    }
+    // console.log(res);
+  },
   methods: {
     async loginOut() {
       await this.$confirm("此操作将退出此页面, 是否继续?", "提示", {
@@ -134,11 +92,12 @@ export default {
 };
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 .el-header {
   background-color: #b3c1cd;
   padding: 0;
   .el-col {
+    min-width: 300px;
     img {
       width: 200px;
       height: 56px;
@@ -170,5 +129,9 @@ export default {
 }
 .el-submenu .el-menu-item {
   min-width: 100%;
+}
+.rightOut {
+  text-align: right;
+  padding-right: 20px;
 }
 </style>

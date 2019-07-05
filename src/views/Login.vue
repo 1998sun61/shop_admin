@@ -26,7 +26,6 @@
   </el-row>
 </template>
 
-
 <script>
 // import { close, closeSync } from "fs";
 export default {
@@ -94,7 +93,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .row-bg {
   height: 100%;
   background-color: #2d434c;
